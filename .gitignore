@@ -7,6 +7,7 @@ Fable Conversion/
 *_idea.pdf
 .token-savior-cache.json
 Desktop.ini
-# Only the approved hero is published from ui/.
+# Only the approved hero and the language panel are published from ui/.
 ui/*
 !ui/Mimic-Hero-0.3.0.png
+!ui/Mimic-Stack.svg

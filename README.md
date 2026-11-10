@@ -2,6 +2,8 @@
 
 ![Mimic](ui/Mimic-Hero-0.3.0.png)
 
+<p align="center"><img src="ui/Mimic-Stack.svg" alt="Built with C# 93.5%, PowerShell 3.5%, NSIS 1.7%, HTML 1.3% (GitHub language breakdown)"></p>
+
 > **Turn any video or picture into a titled, timestamped note, on your own Windows PC, with no subscription.**
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)
