@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Mimic.Core</RootNamespace>
+    <Platforms>x64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\pick_video.ps1" LogicalName="pick_video.ps1" />
+    <EmbeddedResource Include="Resources\print_pdf.ps1" LogicalName="print_pdf.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mimic.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+﻿bin/
+obj/
+.vs/
+.claude/
+*.user
+Fable Conversion/
+*_idea.pdf
+.token-savior-cache.json
+Desktop.ini
+# Only the approved hero is published from ui/.
+ui/*
+!ui/Mimic-Hero-0.3.0.png

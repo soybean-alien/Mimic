@@ -1,0 +1,279 @@
+<Window
+    x:Class="Mimic.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Mimic"
+    Title="Mimic">
+  <Grid x:Name="Root" Background="{ThemeResource PaperBrush}" AllowDrop="True"
+        DragEnter="OnDragEnter" DragOver="OnDragOver" DragLeave="OnDragLeave" Drop="OnDrop">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition x:Name="SidebarColumn" Width="286" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <!-- Sidebar -->
+    <Border x:Name="Sidebar" Background="{ThemeResource PaperDeepBrush}"
+            BorderBrush="{StaticResource InkLine10Brush}" BorderThickness="0,0,1,0" Padding="20,28,20,18">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="Brand" Orientation="Horizontal" Spacing="12" Margin="5,2,5,27" MinHeight="67.4">
+          <Image Source="ms-appx:///Assets/Mimic-Treasure-Chest.png" Width="50" Height="50" Stretch="Uniform"
+                 Margin="-4,-3,0,0" VerticalAlignment="Top" />
+          <StackPanel>
+            <TextBlock Text="Mimic" FontFamily="{StaticResource Serif}" FontStyle="Italic" FontSize="32"
+                       CharacterSpacing="-55" LineHeight="30.4" LineStackingStrategy="BlockLineHeight"
+                       Foreground="{ThemeResource RedBrush}" />
+            <TextBlock x:Name="BrandSubtitle" Text="PERSONAL KNOWLEDGE STUDIO" FontSize="10" CharacterSpacing="125" Margin="0,6,0,0"
+                       LineHeight="15.5" TextWrapping="Wrap" Width="178" HorizontalAlignment="Left"
+                       Foreground="{ThemeResource BrandSubtitleBrush}" />
+          </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderBrush="{StaticResource InkLine13Brush}" BorderThickness="0,1,0,0" Padding="5,18,5,10">
+          <Grid>
+            <TextBlock Text="YOUR LIBRARY" FontSize="10" FontWeight="Bold" CharacterSpacing="160" LineHeight="15.5"
+                       Foreground="{ThemeResource InkBrush}" VerticalAlignment="Center" />
+            <local:PrivacyBadge Text="LOCAL" HorizontalAlignment="Right" />
+          </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2">
+          <local:FlatButton x:Name="LibraryLocation" Click="OnLibraryLocation" Margin="0,8,0,0" Padding="8,7"
+                            CornerRadius="5" FontSize="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            BgKey="QuietSurface" BorderKey="Line" FgKey="Muted" HoverBorderKey="Cyan" HoverFgKey="Cyan"
+                            ToolTipService.ToolTip="Open the library folder">
+            <TextBlock x:Name="LibraryLocationText" Text="Loading local library path…" TextTrimming="CharacterEllipsis" />
+          </local:FlatButton>
+          <local:FlatButton x:Name="StoredFiles" Click="OnStoredFiles" Margin="0,9,0,0" Padding="8,7"
+                            CornerRadius="5" FontSize="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            BgKey="QuietSurface" BorderKey="Line" FgKey="Muted" HoverBorderKey="Cyan" HoverFgKey="Cyan"
+                            ToolTipService.ToolTip="Open Mimic's stored video files">
+            <TextBlock Text="Open Stored files" TextTrimming="CharacterEllipsis" />
+          </local:FlatButton>
+          <local:FlatButton x:Name="ChangeLibrary" Click="OnChangeLibrary" Margin="0,9,0,0" Padding="8,7"
+                            CornerRadius="5" FontSize="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            BgKey="QuietSurface" BorderKey="Line" FgKey="Muted" HoverBorderKey="Cyan" HoverFgKey="Cyan"
+                            ToolTipService.ToolTip="Choose the folder where Mimic keeps your library">
+            <TextBlock Text="Change library folder…" TextTrimming="CharacterEllipsis" />
+          </local:FlatButton>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Padding="0,2,11,12" x:Name="LibraryScroll">
+          <StackPanel x:Name="LibraryList" />
+        </ScrollViewer>
+
+        <Border Grid.Row="4" BorderBrush="{StaticResource InkLine13Brush}" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+          <StackPanel>
+            <local:FlatButton x:Name="ModelButton" Click="OnModel" Margin="0,8,0,0" HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Left" BgKey="ModelTeal" BorderKey="ModelTeal" FgKey="#1D2143"
+                              HoverBgKey="ModelTealHover" HoverBorderKey="ModelTealHover"
+                              ToolTipService.ToolTip="Choose what writes titles, reverse prompts and the score">
+              <StackPanel Orientation="Horizontal">
+                <Grid Width="9" Height="9" Margin="1,0,8,1" VerticalAlignment="Center">
+                  <Canvas x:Name="ModelDotGlowHost" />
+                  <Ellipse x:Name="ModelDot" Width="9" Height="9" Fill="{ThemeResource ModelDotBrush}" />
+                </Grid>
+                <TextBlock x:Name="ModelButtonText" Text="Model" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </local:FlatButton>
+            <local:FlatButton x:Name="UpdateButton" Click="OnUpdateYtDlp" Margin="0,8,0,0" HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Left" BgKey="UpdateMagenta" BorderKey="UpdateMagenta" FgKey="#1D2143"
+                              HoverBgKey="UpdateMagentaHover" HoverBorderKey="UpdateMagentaHover">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="↻" FontSize="17" Margin="0,0,7,0" LineHeight="23.25" VerticalAlignment="Center" />
+                <TextBlock Text="Update yt-dlp" VerticalAlignment="Center" />
+              </StackPanel>
+            </local:FlatButton>
+            <local:PrivacyBadge Text="Your collection stays on this PC" TextSize="10" Spacing0="True"
+                                Margin="3,12,3,2" HorizontalAlignment="Left" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Main -->
+    <Grid x:Name="Main" Grid.Column="1" Margin="42,0,42,28">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="66" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Border BorderBrush="{StaticResource InkLine12Brush}" BorderThickness="0,0,0,1">
+        <Grid>
+          <TextBlock Text="CAPTURE / TRANSCRIBE / KEEP" FontSize="10" FontWeight="Bold" CharacterSpacing="170" LineHeight="15.5"
+                     Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Center" />
+          <local:PrivacyBadge Text="Private workspace" HorizontalAlignment="Right" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <Grid Grid.Row="1" Padding="0,20,0,0">
+        <Rectangle Height="1" VerticalAlignment="Bottom" Fill="{ThemeResource LineBrush}" />
+        <StackPanel x:Name="Tabs" Orientation="Horizontal" Spacing="8" />
+      </Grid>
+
+      <Grid x:Name="PanesHost" Grid.Row="2" />
+
+      <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Padding="0,10,0,0">
+        <TextBlock x:Name="VersionText" Text="Version …" FontSize="11" Foreground="{ThemeResource MutedBrush}"
+                   VerticalAlignment="Center" />
+        <local:FlatButton Content="GitHub releases" Click="OnReleases" Padding="10,6"
+                          BgKey="QuietSurface" BorderKey="Line" FgKey="Ink" HoverBorderKey="Blue" HoverFgKey="Blue"
+                          ToolTipService.ToolTip="Open Mimic's GitHub releases page in your browser" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Drop veil -->
+    <Grid x:Name="DropVeil" Grid.ColumnSpan="2" Margin="12" Opacity="0" IsHitTestVisible="False">
+      <Rectangle RadiusX="14" RadiusY="14" Stroke="{ThemeResource RedBrush}" StrokeThickness="2"
+                 StrokeDashArray="3 2" Fill="{ThemeResource VeilFillBrush}" />
+      <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560" Padding="42,30"
+              BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="10"
+              Background="{ThemeResource CardBrush}">
+        <StackPanel Spacing="9">
+          <TextBlock Text="Drop to begin" FontFamily="{StaticResource Serif}" FontSize="30"
+                     HorizontalAlignment="Center" Foreground="{ThemeResource InkBrush}" />
+          <TextBlock Text="Videos transcribe with Whisper · Images get an AI score and reverse prompt" FontSize="12"
+                     TextAlignment="Center" TextWrapping="Wrap" Foreground="{ThemeResource MutedBrush}" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Dialogs -->
+    <Grid x:Name="Overlay" Grid.ColumnSpan="2" Background="{StaticResource BackdropBrush}" Visibility="Collapsed">
+
+      <!-- Model -->
+      <Border x:Name="ModelDialog" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+              Width="540" BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="10"
+              Background="{ThemeResource PaperBrush}">
+        <Border.Resources>
+          <Style x:Key="ModelFieldBox" TargetType="TextBox" BasedOn="{StaticResource AutoSuggestBoxTextBoxStyle}">
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="MinHeight" Value="44" />
+            <Setter Property="IsSpellCheckEnabled" Value="False" />
+            <Setter Property="Background" Value="{ThemeResource CardBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource LineBrush}" />
+          </Style>
+        </Border.Resources>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="9" Padding="27">
+            <TextBlock Text="Model" FontFamily="{StaticResource Serif}" FontSize="32" LineHeight="35"
+                       Foreground="{ThemeResource InkBrush}" />
+            <TextBlock Text="Writes the section titles, reverse prompts and AI score. Whisper always does the transcribing."
+                       FontSize="12" TextWrapping="Wrap" Margin="0,0,0,5" Foreground="{ThemeResource MutedBrush}" />
+            <local:ChoiceRadio x:Name="KindDefault" Kind="default" Text="Default: Haiku for titles, Sonnet for images" Chosen="OnKindChosen" />
+            <local:ChoiceRadio x:Name="KindClaude" Kind="claude" Text="A Claude model for everything" Chosen="OnKindChosen" />
+            <ComboBox x:Name="ClaudeModel" HorizontalAlignment="Stretch" Padding="12,10" CornerRadius="5" FontSize="14" MinHeight="44"
+                      Background="{ThemeResource CardBrush}" BorderBrush="{ThemeResource LineBrush}">
+              <ComboBoxItem Content="Claude Fable 5.1" Tag="claude-fable-5-1" />
+              <ComboBoxItem Content="Claude Opus 5.5" Tag="claude-opus-5-5" />
+              <ComboBoxItem Content="Claude Sonnet 5.5" Tag="claude-sonnet-5-5" />
+              <ComboBoxItem Content="Claude Haiku 5.5" Tag="claude-haiku-5-5" />
+            </ComboBox>
+            <local:ChoiceRadio x:Name="KindOpenAi" Kind="openai" Text="OpenAI, with your ChatGPT sign-in" Chosen="OnKindChosen" />
+            <AutoSuggestBox x:Name="OpenAiModel" PlaceholderText="Pick or type a model name" HorizontalAlignment="Stretch"
+                            Tag="gpt-6-luna|gpt-5.6-luna|gpt-6.1-terra|gpt-5.6-terra|gpt-6.1-sol"
+                            TextBoxStyle="{StaticResource ModelFieldBox}" TextChanged="OnModelNameChanged"
+                            GotFocus="OnModelNameFocus" />
+            <StackPanel Orientation="Horizontal" Spacing="10" MinHeight="32">
+              <local:FlatButton x:Name="OpenAiSignIn" Content="Sign in to OpenAI" Click="OnOpenAiSignIn" Visibility="Collapsed"
+                                BgKey="#8CFFFDF8" BorderKey="Line" FgKey="Ink" HoverBgKey="Card" HoverBorderKey="#B8AD9B"
+                                VerticalAlignment="Center" />
+              <TextBlock x:Name="OpenAiStatus" FontSize="12" Foreground="{ThemeResource MutedBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+            <local:ChoiceRadio x:Name="KindServer" Kind="server" Text="DeepSeek, a local model, or any OpenAI-compatible service" Chosen="OnKindChosen" />
+            <ComboBox x:Name="ServerPreset" SelectionChanged="OnServerPreset" HorizontalAlignment="Stretch" Padding="12,10" MinHeight="44"
+                      CornerRadius="5" FontSize="14" Background="{ThemeResource CardBrush}" BorderBrush="{ThemeResource LineBrush}">
+              <ComboBoxItem Content="Ollama" Tag="http://localhost:11434/v1" />
+              <ComboBoxItem Content="LM Studio" Tag="http://localhost:1234/v1" />
+              <ComboBoxItem Content="DeepSeek" Tag="https://api.deepseek.com" />
+              <ComboBoxItem Content="Another address" Tag="" />
+            </ComboBox>
+            <TextBox x:Name="ServerAddress" PlaceholderText="Address, such as http://localhost:11434/v1"
+                     Text="http://localhost:11434/v1" IsSpellCheckEnabled="False" Padding="12,10" CornerRadius="5" MinHeight="44"
+                     FontSize="14" Background="{ThemeResource CardBrush}" BorderBrush="{ThemeResource LineBrush}" />
+            <AutoSuggestBox x:Name="ServerModel" PlaceholderText="Pick or type a model name" HorizontalAlignment="Stretch"
+                            Tag="deepseek-flash" TextBoxStyle="{StaticResource ModelFieldBox}"
+                            TextChanged="OnModelNameChanged" GotFocus="OnModelNameFocus" />
+            <PasswordBox x:Name="ServerKey" PlaceholderText="API key, if it needs one" Padding="12,10" CornerRadius="5" MinHeight="44"
+                         FontSize="14" Background="{ThemeResource CardBrush}" BorderBrush="{ThemeResource LineBrush}" />
+            <TextBlock x:Name="ModelStatus" FontSize="14" TextWrapping="Wrap" Visibility="Collapsed"
+                       Foreground="{ThemeResource ErrorBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+              <local:FlatButton Content="Save" Click="OnModelSave" Padding="17,8" CornerRadius="5" BorderThickness="0"
+                                FontSize="14" BgKey="Red" FgKey="#FFFFFF" />
+              <local:FlatButton Content="Cancel" Click="OnModelCancel" Padding="14,8" CornerRadius="5" FontSize="14"
+                                BorderKey="Line" FgKey="Ink" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- Video player -->
+      <Border x:Name="VideoDialog" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+              BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="10"
+              Background="{ThemeResource PaperBrush}">
+        <Grid>
+        <ScrollViewer x:Name="VideoScroll" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                      Padding="18,18,32,18">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid Margin="0,0,0,12" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="VideoDialogTitle" FontFamily="{StaticResource Serif}" FontSize="24" LineHeight="28.8"
+                       TextWrapping="Wrap" Foreground="{ThemeResource RedBrush}" VerticalAlignment="Center" />
+            <local:FlatButton Grid.Column="1" Content="Close" Click="OnVideoClose" VerticalAlignment="Center"
+                              BgKey="#8CFFFDF8" BorderKey="Line" FgKey="Ink" HoverBgKey="Card" HoverBorderKey="#B8AD9B" />
+          </Grid>
+          <Border x:Name="VideoStage" Grid.Row="1" CornerRadius="7" Background="#080910" MinHeight="240" />
+          <TextBlock Grid.Row="2" Margin="2,10,2,0" FontSize="11" Foreground="{ThemeResource MutedBrush}"
+                     Text="Generated captions follow the transcript. Click any timestamp to jump to that section." />
+        </Grid>
+        </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <!-- First-run downloads (new in the WinUI build: tools are no longer bundled in the installer) -->
+      <Border x:Name="SetupDialog" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+              Width="540" Padding="27" BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="10"
+              Background="{ThemeResource PaperBrush}">
+        <StackPanel Spacing="9">
+          <TextBlock Text="Downloads" FontFamily="{StaticResource Serif}" FontSize="32" LineHeight="35"
+                     Foreground="{ThemeResource InkBrush}" />
+          <TextBlock x:Name="SetupIntro" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,5"
+                     Foreground="{ThemeResource MutedBrush}" />
+          <StackPanel x:Name="SetupRows" Spacing="8" />
+          <Grid x:Name="SetupProgress" Height="5" Visibility="Collapsed" Margin="0,4,0,0">
+            <Rectangle RadiusX="2.5" RadiusY="2.5" Fill="{ThemeResource ProgressTrackBrush}" />
+            <Rectangle x:Name="SetupProgressFill" RadiusX="2.5" RadiusY="2.5" Fill="{StaticResource NavyBrush}"
+                       HorizontalAlignment="Left" Width="0" />
+          </Grid>
+          <TextBlock x:Name="SetupStatus" FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource MutedBrush}" />
+          <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+            <local:FlatButton x:Name="SetupClose" Content="Close" Click="OnSetupClose" Padding="14,8" CornerRadius="5"
+                              FontSize="14" BorderKey="Line" FgKey="Ink" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

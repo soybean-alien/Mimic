@@ -1,0 +1,20 @@
+<Project>
+  <!-- Build output stays outside the source tree, next to Mimic's own data. -->
+  <PropertyGroup>
+    <MimicBuildRoot>$(USERPROFILE)\Mimic\build\winui\</MimicBuildRoot>
+    <BaseOutputPath>$(MimicBuildRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MimicBuildRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <Version>0.3.0</Version>
+    <Authors>soybean_alien</Authors>
+    <Product>Mimic</Product>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <!-- Release files carry no debug data, so the build PC's folder path (and account name) is not inside them. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+</Project>

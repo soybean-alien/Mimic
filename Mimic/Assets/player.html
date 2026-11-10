@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mimic player</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #080910; font: 14px/1.55 "Segoe UI", system-ui, sans-serif; }
+  .stage { position: relative; display: grid; width: 100%; height: 100%; place-items: center; overflow: hidden; background: #080910; }
+  #local, #remote, #remote iframe { display: block; width: 100%; height: 100%; border: 0; background: #080910; }
+  #local[hidden], #remote[hidden], #caption[hidden] { display: none; }
+  #local { object-fit: contain; }
+  #remote { position: absolute; inset: 0; }
+  #caption { position: absolute; right: 5%; bottom: 6%; left: 5%; padding: 7px 12px; border-radius: 4px; background: rgba(7, 8, 13, .82); color: white; font-size: clamp(14px, 1.8vw, 21px); line-height: 1.4; text-align: center; text-shadow: 0 1px 2px black; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <video id="local" controls playsinline hidden></video>
+  <div id="remote" hidden></div>
+  <div id="caption" aria-live="polite" hidden></div>
+</div>
+<script>
+// The video player, hosted on its own page.
+const $ = (id) => document.getElementById(id);
+
+function vttTimestamp(milliseconds) {
+  const time = Math.max(0, Math.floor(Number(milliseconds) || 0));
+  const hours = Math.floor(time / 3_600_000);
+  const minutes = Math.floor((time % 3_600_000) / 60_000);
+  const seconds = Math.floor((time % 60_000) / 1_000);
+  const ms = time % 1_000;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(ms).padStart(3, "0")}`;
+}
+
+function transcriptVtt(segments) {
+  return `WEBVTT\n\n${segments.map((segment, index) => {
+    const start = Math.max(0, Number(segment.start_ms) || 0);
+    const end = Math.max(start + 500, Number(segment.end_ms) || start + 2500);
+    const text = String(segment.text || "").replace(/-->/g, "—>").trim();
+    return text ? `${index + 1}\n${vttTimestamp(start)} --> ${vttTimestamp(end)}\n${text}\n` : "";
+  }).filter(Boolean).join("\n")}`;
+}
+
+function setPlayerCaption(segments, seconds) {
+  const time = Math.max(0, Number(seconds) || 0) * 1000;
+  const current = segments.find((segment) => time >= segment.start_ms && time <= segment.end_ms);
+  $("caption").textContent = current?.text || "";
+}
+
+function open(job) {
+  const local = $("local");
+  const remote = $("remote");
+  const caption = $("caption");
+  const timestamp = Math.max(0, Number(job.start_ms) || 0);
+  if (job.youtube_id) {
+    const frame = document.createElement("iframe");
+    frame.title = `Video: ${job.title}`;
+    frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+    frame.allowFullscreen = true;
+    frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(job.youtube_id)}?enablejsapi=1&origin=${encodeURIComponent(location.origin)}&playsinline=1&start=${Math.floor(timestamp / 1000)}&rel=0`;
+    remote.replaceChildren(frame);
+    remote.hidden = false;
+    caption.hidden = false;
+    setPlayerCaption(job.segments, timestamp / 1000);
+    setInterval(() => {
+      frame.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "getCurrentTime", args: [] }), "*");
+    }, 400);
+    window.addEventListener("message", (event) => {
+      if (event.source !== frame.contentWindow) return;
+      let senderHost = "";
+      try { senderHost = new URL(event.origin).hostname; } catch { return; }
+      if (!/youtube(-nocookie)?\.com$/.test(senderHost)) return;
+      let data = event.data;
+      if (typeof data === "string") { try { data = JSON.parse(data); } catch { return; } }
+      if (data?.info?.currentTime != null) setPlayerCaption(job.segments, data.info.currentTime);
+    });
+    return;
+  }
+  local.src = job.src;
+  local.hidden = false;
+  const track = document.createElement("track");
+  track.kind = "subtitles";
+  track.label = "Mimic transcript";
+  track.srclang = String(job.language || "en").slice(0, 2).toLowerCase();
+  track.src = URL.createObjectURL(new Blob([transcriptVtt(job.segments)], { type: "text/vtt" }));
+  track.default = true;
+  local.append(track);
+  local.onloadedmetadata = () => { local.currentTime = timestamp / 1000; };
+  if (timestamp > 0) local.currentTime = timestamp / 1000;
+  void local.play().catch(() => {});
+}
+
+window.chrome.webview.addEventListener("message", (event) => open(event.data));
+window.chrome.webview.postMessage("ready");
+</script>
+</body>
+</html>
