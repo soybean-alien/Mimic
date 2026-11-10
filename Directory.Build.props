@@ -4,7 +4,7 @@
     <MimicBuildRoot>$(USERPROFILE)\Mimic\build\winui\</MimicBuildRoot>
     <BaseOutputPath>$(MimicBuildRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
     <BaseIntermediateOutputPath>$(MimicBuildRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>soybean_alien</Authors>
     <Product>Mimic</Product>
     <Nullable>enable</Nullable>

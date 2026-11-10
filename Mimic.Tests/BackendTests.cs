@@ -184,6 +184,9 @@ public class BackendTests
         var srt = Path.Combine(dir.Path, "out.srt");
         await backend.ExportTranscriptAsync("a", "srt", false, srt);
         Assert.Equal("1\n00:00:00,000 --> 00:00:01,000\none two three\n\n", File.ReadAllText(srt));
+        var note = Path.Combine(dir.Path, "out.md");
+        Assert.Equal(note, await backend.ExportTranscriptAsync("a", "md", false, note));
+        Assert.Contains("one two three", File.ReadAllText(note));
         Assert.Null(await backend.ExportTranscriptAsync("a", "txt", false, null));
         Assert.Equal("Unknown format: docx", (await Assert.ThrowsAsync<MimicException>(() => backend.ExportTranscriptAsync("a", "docx", false, text))).Message);
         Assert.False(await backend.ExportPdfAsync("a", null));

@@ -698,7 +698,9 @@ public sealed partial class PaneView : UserControl
         try
         {
             string? saved;
-            if (format == "md")
+            // With MIMIC_OBSIDIAN_VAULT set, the note is filed in that vault; otherwise Save .md asks where to save.
+            var vault = format == "md" && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MIMIC_OBSIDIAN_VAULT"));
+            if (vault)
             {
                 try
                 {
@@ -724,7 +726,7 @@ public sealed partial class PaneView : UserControl
                 await Backend.ExportTranscriptAsync(id, format, false, path);
                 saved = path;
             }
-            if (saved != null) SetStatus(format == "md" ? $"Saved to the Mimic Obsidian project folder: {saved}" : $"Saved the .{format} file.");
+            if (saved != null) SetStatus(vault ? $"Saved to the Mimic Obsidian project folder: {saved}" : $"Saved the .{format} file.");
         }
         catch (Exception error)
         {

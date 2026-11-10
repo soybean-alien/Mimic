@@ -12,7 +12,7 @@ Mimic is a small Windows desktop app built with .NET 10, WinUI 3 and the Windows
 
 ## Install
 
-1. Download **Mimic_0.3.0_x64-setup.exe** from the [latest release](https://github.com/soybean-alien/Mimic/releases/latest). It is about 7 MB.
+1. Download **Mimic_0.3.1_x64-setup.exe** from the [latest release](https://github.com/soybean-alien/Mimic/releases/latest). It is about 7 MB.
 2. Run it. Windows may show a "Windows protected your PC" box because the installer is not signed; choose **More info**, then **Run anyway**.
 3. Open Mimic and click **Download tools**, then **Download Whisper model**.
 
@@ -44,13 +44,13 @@ Reading, exporting and playing transcripts you already have works without any of
 
 - **Transcribe from a link.** yt-dlp fetches the audio and whisper.cpp transcribes it on your machine.
 - **Embedded video extraction.** Point a crosshair at a video on your screen, link or no link. Mimic tries available video sources, reports extraction attempts and results, and falls back to listening to the window when video extraction fails. Listening runs in real time.
-- **Drop a file.** Drop a video or audio file on the window to transcribe it, or a picture to describe it.
+- **Drop a file.** Drop a video file on the window to transcribe it, or a picture to describe it.
 - **Video length and host.** Shows the video duration and sanitized hosting names when the source provides them.
 - **Local video playback.** Plays saved video downloads from the transcript; timestamps jump to the matching section.
 - **Progress and timer.** A progress bar and timer run while video jobs are working.
 - **Key takeaways by topic.** Timestamped topic sections with supporting details.
 - **Section titles.** Every timestamp gets a short title saying what that section covers.
-- **Save .md.** A note with frontmatter, a heading per section, and timestamps that link back to that second on YouTube. Direct Obsidian saving uses the `MIMIC_OBSIDIAN_VAULT` path supplied when Mimic starts; Mimic does not guess a vault location. If the destination contains `.obsidian`, Mimic asks before writing.
+- **Save .md.** A note with frontmatter, a heading per section, and timestamps that link back to that second on YouTube. Save .md opens Save As, so you choose where the note goes. Optional direct filing: if the `MIMIC_OBSIDIAN_VAULT` variable is set when Mimic starts, the note goes straight into that folder's `Claude Code/Development/Projects/Mimic/Projects` subfolder instead, which must already exist; if the vault contains `.obsidian`, Mimic asks before writing.
 - **More exports.** Copy, Save .srt, Save .txt and Export PDF.
 - **Pictures.** Browse to an image for a very detailed reverse prompt, plus an AI score in one of six tiers of certainty. The score is a model's opinion, not a measured detector.
 - **Two tabs.** Run two jobs side by side, each with an MM:SS stopwatch.
@@ -107,4 +107,4 @@ The installer is written to `%USERPROFILE%\Mimic\build\winui\installer`.
 - Made by **soybean_alien**. Licensed under the **GNU General Public License v3.0** (see [LICENSE](LICENSE)).
 - [.NET](https://github.com/dotnet/runtime), [Windows App SDK and WinUI 3](https://github.com/microsoft/WindowsAppSDK), [Microsoft.Data.Sqlite](https://github.com/dotnet/efcore), [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [whisper.cpp](https://github.com/ggml-org/whisper.cpp).
 - Mimic is an unofficial personal project and isn't affiliated with Anthropic, OpenAI, DeepSeek or Microsoft.
-- **AI disclosure:** Mimic was designed with and written by **Claude Code (Anthropic, Claude Fable 5.2)**, directed and tested by the author. Run in the real app before release: opening a library, transcript and picture views, the video player, the Model dialog, the Downloads box and changing the library folder. Covered by automated tests only: link and file transcription, tool downloads, exports and PDF. Not yet run in the real app: Embedded capture, the AI routes, OpenAI sign-in and a fresh install on a PC without the runtimes.
+- **AI disclosure:** Mimic was designed with and written by **Claude Code (Anthropic, Claude Fable 5.2)**, directed and tested by the author. Run in the real installed app (0.3.0 and 0.3.1): link transcription, a dropped video file, a picture's reverse prompt and score, section titles, Key takeaways, Copy, Save .srt, Save .txt, Save .md, Export PDF, the video player, Embedded capture (both extraction from a browser tab and listening to a window), Delete, opening a library, the Model dialog, the Downloads box and changing the library folder. The AI features were run on the Default Claude route only. Not yet run in the real app: the OpenAI, DeepSeek and own-server routes, OpenAI sign-in, and a fresh install on a PC without the runtimes.

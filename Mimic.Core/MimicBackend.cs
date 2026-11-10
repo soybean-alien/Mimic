@@ -413,16 +413,20 @@ public sealed class MimicBackend : IDisposable
 
     /// <summary>
     /// export_transcript. "srt" and "txt" are written to <paramref name="outputPath"/>, the file the user chose;
-    /// pass null when they cancelled, and null comes back. "md" ignores it and files the note in the Mimic
-    /// Obsidian project folder, failing with OBSIDIAN_CONFIRMATION_REQUIRED until
-    /// <paramref name="allowObsidianVault"/> is true. Returns the path written.
+    /// pass null when they cancelled, and null comes back. "md" is written there too when a path is given; with
+    /// null it files the note in the Mimic Obsidian project folder, failing with OBSIDIAN_CONFIRMATION_REQUIRED
+    /// until <paramref name="allowObsidianVault"/> is true. Returns the path written.
     /// </summary>
     public Task<string?> ExportTranscriptAsync(string id, string format, bool allowObsidianVault, string? outputPath) => Background(() =>
     {
         var (transcript, titles, score, takeaways) = WithStore(s => (s.Get(id), s.Titles(id), s.Score(id), s.Takeaways(id)));
         if (format is not ("srt" or "txt" or "md")) throw new MimicException($"Unknown format: {format}");
         string path;
-        if (format == "md")
+        if (format == "md" && outputPath is not null)
+        {
+            path = outputPath;
+        }
+        else if (format == "md")
         {
             var vaultRoot = Paths.ObsidianVaultRoot();
             if (Directory.Exists(Sys.Join(vaultRoot, ".obsidian")) && !allowObsidianVault)
