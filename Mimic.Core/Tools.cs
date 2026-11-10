@@ -115,10 +115,16 @@ internal static class Tools
     /// Runs a tool with an optional wall-clock limit. Large downloads and Whisper keep
     /// their unlimited default; only short metadata lookups should use a deadline.
     /// </summary>
-    internal static string RunWithTimeout(Job job, ToolCommand command, string tool, string? input, TimeSpan? timeout)
+    internal static string RunWithTimeout(Job job, ToolCommand command, string tool, string? input, TimeSpan? timeout) =>
+        RunWithBytes(job, command, tool, input is null ? null : Sys.Io(() => File.ReadAllBytes(input)), timeout);
+
+    /// <summary>Same as <see cref="Run"/>, feeding the tool text on stdin straight from memory, for input that must not touch the disk.</summary>
+    internal static string RunWithText(Job job, ToolCommand command, string tool, string input) =>
+        RunWithBytes(job, command, tool, Sys.Utf8.GetBytes(input), null);
+
+    private static string RunWithBytes(Job job, ToolCommand command, string tool, byte[]? stdin, TimeSpan? timeout)
     {
         if (job.Cancelled) throw new MimicException(Cancelled);
-        var stdin = input is null ? null : Sys.Io(() => File.ReadAllBytes(input));
         var start = new ProcessStartInfo(command.Program)
         {
             UseShellExecute = false,

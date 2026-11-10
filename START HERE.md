@@ -6,7 +6,7 @@ This page walks you through it one small step at a time. You do not need to know
 
 ## Part 1: Put Mimic on your computer
 
-1. Find the file named **Mimic_0.3.1_x64-setup.exe**. It is small (about 7 MB).
+1. Find the file named **Mimic_0.3.2_x64-setup.exe**. It is small (about 7 MB).
 2. Double-click it.
 3. If Windows shows a blue box that says it protected your PC, click **More info**, then **Run anyway**. This appears because Mimic is a small personal project.
 4. Click **Next**, then **Install**.

@@ -12,7 +12,7 @@ Mimic is a small Windows desktop app built with .NET 10, WinUI 3 and the Windows
 
 ## Install
 
-1. Download **Mimic_0.3.1_x64-setup.exe** from the [latest release](https://github.com/soybean-alien/Mimic/releases/latest). It is about 7 MB.
+1. Download **Mimic_0.3.2_x64-setup.exe** from the [latest release](https://github.com/soybean-alien/Mimic/releases/latest). It is about 7 MB.
 2. Run it. Windows may show a "Windows protected your PC" box because the installer is not signed; choose **More info**, then **Run anyway**.
 3. Open Mimic and click **Download tools**, then **Download Whisper model**.
 
@@ -31,7 +31,7 @@ The installer contains only Mimic itself. Everything else is downloaded when it 
 | Whisper engine (whisper.cpp) | 10 MB | In Mimic, the first time it is needed |
 | **Whisper model** (`ggml-large-v3-turbo-q5_0.bin`) | 574 MB | **Optional. Only when you choose to download it in Mimic** |
 
-**The Whisper model is not in the installer.** Mimic needs it to transcribe, so the first time you transcribe (or when you open **Downloads** from the missing-tools notice at startup) Mimic offers to download it. The download is checked against its SHA-1 before it is used. If the model is already in `%USERPROFILE%\Mimic\models`, Mimic uses it and downloads nothing.
+**The Whisper model is not in the installer.** Mimic needs it to transcribe, so the first time you transcribe (or when you open **Downloads** from the missing-tools notice at startup) Mimic offers to download it. The download is checked against its SHA-1 before it is used. yt-dlp, FFmpeg and the Whisper engine are each checked against the SHA-256 that GitHub publishes for that release file; a download that does not match is deleted, and if GitHub gives no checksum nothing is downloaded. If the model is already in `%USERPROFILE%\Mimic\models`, Mimic uses it and downloads nothing.
 
 The simple way is two clicks in Mimic's **Downloads** box: **Download tools**, then **Download Whisper model**. To fetch the files yourself instead, the Downloads box links to each one. The two single-file downloads are:
 
@@ -107,4 +107,4 @@ The installer is written to `%USERPROFILE%\Mimic\build\winui\installer`.
 - Made by **soybean_alien**. Licensed under the **GNU General Public License v3.0** (see [LICENSE](LICENSE)).
 - [.NET](https://github.com/dotnet/runtime), [Windows App SDK and WinUI 3](https://github.com/microsoft/WindowsAppSDK), [Microsoft.Data.Sqlite](https://github.com/dotnet/efcore), [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [whisper.cpp](https://github.com/ggml-org/whisper.cpp).
 - Mimic is an unofficial personal project and isn't affiliated with Anthropic, OpenAI, DeepSeek or Microsoft.
-- **AI disclosure:** Mimic was designed with and written by **Claude Code (Anthropic, Claude Fable 5.2)**, directed and tested by the author. Run in the real installed app (0.3.0 and 0.3.1): link transcription, a dropped video file, a picture's reverse prompt and score, section titles, Key takeaways, Copy, Save .srt, Save .txt, Save .md, Export PDF, the video player, Embedded capture (both extraction from a browser tab and listening to a window), Delete, opening a library, the Model dialog, the Downloads box and changing the library folder. The AI features were run on the Default Claude route only. Not yet run in the real app: the OpenAI, DeepSeek and own-server routes, OpenAI sign-in, and a fresh install on a PC without the runtimes.
+- **AI disclosure:** Mimic was designed with and written by **Claude Code (Anthropic, Claude Fable 5.2)**, directed and tested by the author. Run in the real installed app (0.3.0 and 0.3.1; in 0.3.2 link transcription, the video player and Delete were run again): link transcription, a dropped video file, a picture's reverse prompt and score, section titles, Key takeaways, Copy, Save .srt, Save .txt, Save .md, Export PDF, the video player, Embedded capture (both extraction from a browser tab and listening to a window), Delete, opening a library, the Model dialog, the Downloads box and changing the library folder. The AI features were run on the Default Claude route only. Not yet run in the real app: the OpenAI, DeepSeek and own-server routes, OpenAI sign-in, and a fresh install on a PC without the runtimes.

@@ -260,7 +260,7 @@ public sealed partial class MainWindow
                 CoreWebView2HostResourceAccessKind.Allow);
             if (mediaFolder != null)
             {
-                core.SetVirtualHostNameToFolderMapping("media.mimic.localhost", mediaFolder, CoreWebView2HostResourceAccessKind.Allow);
+                core.SetVirtualHostNameToFolderMapping("media.mimic.localhost", mediaFolder, CoreWebView2HostResourceAccessKind.DenyCors);
             }
             var json = JsonSerializer.Serialize(job);
             core.WebMessageReceived += (_, _) => core.PostWebMessageAsJson(json);

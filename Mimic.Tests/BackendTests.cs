@@ -1,6 +1,7 @@
 // Mimic by soybean_alien
 // https://github.com/soybean-alien/Mimic
 // Licensed under the GNU General Public License v3.0 (see LICENSE).
+using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
@@ -244,6 +245,7 @@ public class BackendTests
         File.WriteAllText(input, "hello from stdin\n");
         var echoed = Tools.RunWithInput(new Job(), new ToolCommand("findstr").Args("hello"), "findstr", input);
         Assert.Equal("hello from stdin", echoed.Trim());
+        Assert.Equal("hello from memory", Tools.RunWithText(new Job(), new ToolCommand("findstr").Args("hello"), "findstr", "hello from memory\n").Trim());
 
         var failed = Assert.Throws<MimicException>(() =>
             Tools.Run(new Job(), new ToolCommand("cmd").Args("/c", "echo ERROR: broke 1>&2 & exit 3"), "Thing"));
@@ -298,6 +300,53 @@ public class BackendTests
     }
 }
 
+public class OwnServerTests
+{
+    /// <summary>Runs the real curl against a server on this PC that answers once.</summary>
+    [Fact]
+    public async Task The_key_reaches_the_server_without_being_written_to_a_file()
+    {
+        using var dir = new TempFolder();
+        var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var files = Array.Empty<string>();
+        var server = Task.Run(async () =>
+        {
+            using var client = await listener.AcceptTcpClientAsync();
+            var stream = client.GetStream();
+            var request = new StringBuilder();
+            var buffer = new byte[65536];
+            while (true)
+            {
+                var read = await stream.ReadAsync(buffer);
+                if (read == 0) break;
+                request.Append(Encoding.UTF8.GetString(buffer, 0, read));
+                var text = request.ToString();
+                var end = text.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+                if (end < 0) continue;
+                var length = int.Parse(System.Text.RegularExpressions.Regex.Match(text, @"(?i)content-length: (\d+)").Groups[1].Value);
+                if (Encoding.UTF8.GetByteCount(text[(end + 4)..]) >= length) break;
+            }
+            files = Directory.EnumerateFiles(dir.Path, "*", SearchOption.AllDirectories).Select(Path.GetFileName).ToArray()!;
+            var body = """{"choices":[{"message":{"content":"hello back"}}]}""";
+            await stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n{body}"));
+            return request.ToString();
+        });
+
+        var reply = Ai.AskServer(new Job(), new Paths(dir.Path), ModelChoice.Server($"http://127.0.0.1:{port}/v1", "some-model", "test key \"1\""), "hello", null);
+        var seen = await server;
+        listener.Stop();
+
+        Assert.Equal("hello back", reply);
+        Assert.StartsWith("POST /v1/chat/completions ", seen, StringComparison.Ordinal);
+        Assert.Contains("Authorization: Bearer test key \"1\"\r\n", seen, StringComparison.Ordinal);
+        Assert.Contains("\"some-model\"", seen, StringComparison.Ordinal);
+        Assert.Equal(["body.json"], files);
+        Assert.Empty(Directory.EnumerateFiles(dir.Path, "*", SearchOption.AllDirectories));
+    }
+}
+
 public class ToolInstallerTests
 {
     private sealed class FakeWeb(Func<Uri, byte[]?> pages) : HttpMessageHandler
@@ -337,20 +386,27 @@ public class ToolInstallerTests
     public async Task Installs_each_tool_where_mimic_looks_for_it()
     {
         using var dir = new TempFolder();
-        var releases = """
+        var yt = "yt"u8.ToArray();
+        var ffmpeg = Zip(
+            ("ffmpeg-master-latest-win64-gpl/bin/ffmpeg.exe", "ff"), ("ffmpeg-master-latest-win64-gpl/bin/ffprobe.exe", "probe"),
+            ("ffmpeg-master-latest-win64-gpl/bin/ffplay.exe", "play"), ("ffmpeg-master-latest-win64-gpl/doc/readme.txt", "doc"));
+        var whisper = Zip(("Release/whisper-cli.exe", "cli"), ("Release/whisper.dll", "dll"), ("Release/../../escape.txt", "no"), ("readme.txt", "no"));
+        // The newest whisper release has no Windows build, and the next lists one without a checksum; neither may be used.
+        var releases = $$"""
             [{"tag_name":"v9","assets":[]},
-             {"tag_name":"b2","assets":[{"name":"other.zip","browser_download_url":"https://example.test/other.zip"},
-                                        {"name":"whisper-bin-x64.zip","browser_download_url":"https://example.test/w.zip"}]},
-             {"tag_name":"b1","assets":[{"name":"whisper-bin-x64.zip","browser_download_url":"https://example.test/old.zip"}]}]
+             {"tag_name":"b3","assets":[{"name":"whisper-bin-x64.zip","browser_download_url":"https://example.test/unchecked.zip"}]},
+             {"tag_name":"b2","assets":[{"name":"other.zip","browser_download_url":"https://example.test/other.zip","digest":"sha256:{{Sha(yt)}}"},
+                                        {{Asset("whisper-bin-x64.zip", "https://example.test/w.zip", whisper)}}]},
+             {"tag_name":"b1","assets":[{{Asset("whisper-bin-x64.zip", "https://example.test/old.zip", yt)}}]}]
             """;
         var web = new FakeWeb(uri => uri.ToString() switch
         {
-            ToolInstaller.YtDlpUrl => "yt"u8.ToArray(),
-            ToolInstaller.FfmpegUrl => Zip(
-                ("ffmpeg-master-latest-win64-gpl/bin/ffmpeg.exe", "ff"), ("ffmpeg-master-latest-win64-gpl/bin/ffprobe.exe", "probe"),
-                ("ffmpeg-master-latest-win64-gpl/bin/ffplay.exe", "play"), ("ffmpeg-master-latest-win64-gpl/doc/readme.txt", "doc")),
+            ToolInstaller.YtDlpReleaseUrl => Release(Asset("yt-dlp.exe", "https://example.test/yt.exe", yt)),
+            "https://example.test/yt.exe" => yt,
+            ToolInstaller.FfmpegReleaseUrl => Release(Asset("ffmpeg-master-latest-win64-gpl.zip", "https://example.test/ff.zip", ffmpeg)),
+            "https://example.test/ff.zip" => ffmpeg,
             ToolInstaller.WhisperReleasesUrl => Encoding.UTF8.GetBytes(releases),
-            "https://example.test/w.zip" => Zip(("Release/whisper-cli.exe", "cli"), ("Release/whisper.dll", "dll"), ("Release/../../escape.txt", "no"), ("readme.txt", "no")),
+            "https://example.test/w.zip" => whisper,
             _ => null,
         });
         using var installer = new ToolInstaller(dir.Path, web);
@@ -371,6 +427,48 @@ public class ToolInstallerTests
         Assert.Contains(("yt-dlp is installed.", 1.0), seen);
         Assert.Contains(seen, entry => entry.fraction == 1.0 && entry.message.StartsWith("Downloading ffmpeg: ", StringComparison.Ordinal));
         Assert.DoesNotContain(seen, entry => entry.message.Contains('~'));
+    }
+
+    private static string Sha(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+
+    private static string Asset(string name, string url, byte[] bytes) =>
+        $$"""{"name":"{{name}}","browser_download_url":"{{url}}","digest":"sha256:{{Sha(bytes)}}"}""";
+
+    private static byte[] Release(string asset) => Encoding.UTF8.GetBytes($$"""{"tag_name":"t","assets":[{{asset}}]}""");
+
+    [Fact]
+    public async Task A_program_that_does_not_match_its_published_checksum_is_deleted()
+    {
+        using var dir = new TempFolder();
+        var published = Release(Asset("yt-dlp.exe", "https://example.test/yt.exe", "the real one"u8.ToArray()));
+        var swapped = new FakeWeb(uri => uri.ToString() switch
+        {
+            ToolInstaller.YtDlpReleaseUrl => published,
+            "https://example.test/yt.exe" => "something else"u8.ToArray(),
+            _ => null,
+        });
+        using var installer = new ToolInstaller(dir.Path, swapped);
+        var error = await Assert.ThrowsAsync<MimicException>(() => installer.InstallAsync("yt-dlp", null, CancellationToken.None));
+        Assert.Equal("The yt-dlp download did not match its published checksum, so it was deleted. Try again.", error.Message);
+        Assert.Empty(Files(dir.Path));
+
+        // No checksum from GitHub: nothing is downloaded at all, not even from the plain address.
+        var silent = new FakeWeb(uri => uri.ToString() switch
+        {
+            ToolInstaller.FfmpegReleaseUrl => """{"tag_name":"t","assets":[{"name":"ffmpeg-master-latest-win64-gpl.zip","browser_download_url":"https://example.test/ff.zip"}]}"""u8.ToArray(),
+            _ => "anything"u8.ToArray(),
+        });
+        using var blind = new ToolInstaller(dir.Path, silent);
+        error = await Assert.ThrowsAsync<MimicException>(() => blind.InstallAsync("ffmpeg", null, CancellationToken.None));
+        Assert.Equal("Could not install ffmpeg: GitHub did not give the checksum for its download, so nothing was downloaded. Try again later.", error.Message);
+        Assert.Equal([ToolInstaller.FfmpegReleaseUrl], silent.Asked);
+        Assert.Empty(Files(dir.Path));
+
+        // Whisper with no release list falls back to the pinned build, which must match the pinned checksum.
+        using var pinned = new ToolInstaller(dir.Path, new FakeWeb(uri => uri.ToString() == ToolInstaller.WhisperFallbackUrl ? "not that build"u8.ToArray() : null));
+        error = await Assert.ThrowsAsync<MimicException>(() => pinned.InstallAsync("Whisper", null, CancellationToken.None));
+        Assert.Equal("The Whisper download did not match its published checksum, so it was deleted. Try again.", error.Message);
+        Assert.Empty(Files(dir.Path));
     }
 
     private sealed class Collect(List<(string message, double? fraction)> seen) : IProgress<(string message, double? fraction)>
@@ -398,6 +496,8 @@ public class ToolInstallerTests
         using var installer = new ToolInstaller(dir.Path, new FakeWeb(_ => null));
         var error = await Assert.ThrowsAsync<MimicException>(() => installer.InstallAsync("yt-dlp", null, CancellationToken.None));
         Assert.StartsWith("Could not install yt-dlp: ", error.Message, StringComparison.Ordinal);
+        using var broken = new ToolInstaller(dir.Path, new FakeWeb(uri => uri.ToString() == ToolInstaller.YtDlpReleaseUrl ? Release(Asset("yt-dlp.exe", "https://example.test/gone.exe", "yt"u8.ToArray())) : null));
+        Assert.StartsWith("Could not install yt-dlp: ", (await Assert.ThrowsAsync<MimicException>(() => broken.InstallAsync("yt-dlp", null, CancellationToken.None))).Message, StringComparison.Ordinal);
         Assert.Equal("Unknown tool: curl", (await Assert.ThrowsAsync<MimicException>(() => installer.InstallAsync("curl", null, CancellationToken.None))).Message);
 
         using var cancelled = new CancellationTokenSource();

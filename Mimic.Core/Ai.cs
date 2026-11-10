@@ -153,9 +153,9 @@ public static class Ai
 
     /// <summary>
     /// Goes through curl, so Cancel can stop it like any other tool. The key travels in a
-    /// config on stdin, which keeps it off the command line.
+    /// config fed to stdin from memory, which keeps it off the command line and off the disk.
     /// </summary>
-    private static string AskServer(Job job, Paths paths, ModelChoice server, string prompt, string? image)
+    internal static string AskServer(Job job, Paths paths, ModelChoice server, string prompt, string? image)
     {
         var picture = image is null ? null : DataUrl(image);
         var dir = WorkFolder(paths);
@@ -166,11 +166,9 @@ public static class Ai
             Sys.Io(() => File.WriteAllText(Sys.Join(dir, "body.json"), body, Sys.Utf8));
             var config = $"url = {CurlQuoted($"{server.Address.Trim().TrimEnd('/')}/chat/completions")}\nheader = \"Content-Type: application/json\"\n";
             if (server.Key.Trim().Length > 0) config += $"header = {CurlQuoted($"Authorization: Bearer {server.Key.Trim()}")}\n";
-            var input = Sys.Join(dir, "config.txt");
-            Sys.Io(() => File.WriteAllText(input, config, Sys.Utf8));
             var command = new ToolCommand("curl") { WorkingDirectory = dir }
                 .Args("-sS", "--fail-with-body", "-K", "-", "--data-binary", "@body.json");
-            result = Tools.RunWithInput(job, command, "The model server", input);
+            result = Tools.RunWithText(job, command, "The model server", config);
         }
         finally
         {
