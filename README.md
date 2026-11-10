@@ -87,7 +87,7 @@ dotnet build Mimic/Mimic.csproj -c Release -p:Platform=x64
 dotnet test Mimic.Tests/Mimic.Tests.csproj
 ```
 
-To pack the installer you also need NSIS 3 (`makensis.exe` on PATH, or pass `-MakeNsis <path>`):
+To pack the installer you also need [NSIS 3](https://nsis.sourceforge.io/Download). The script finds `makensis.exe` in NSIS's default install folder or on PATH; for any other location pass `-MakeNsis <path>`:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File installer/build.ps1
