@@ -1,0 +1,14 @@
+# Dependabot: weekly pull requests for NuGet packages.
+# Minor and patch updates are grouped; the Windows App SDK packages move together because their
+# versions must match one Windows App SDK release.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directories: ["/Mimic", "/Mimic.Core", "/Mimic.Tests"]
+    schedule:
+      interval: weekly
+    groups:
+      windows-app-sdk:
+        patterns: ["Microsoft.WindowsAppSDK*"]
+      nuget-minor-and-patch:
+        update-types: [minor, patch]
